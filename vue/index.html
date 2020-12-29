@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>App</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="./index.css">
+	</head>
+	<body>
+		<div id="app">
+			<div id="mask" class="disableAddModal">
+				<div id="panel">
+					<div id="avatar"></div>
+					<p id="random" v-on:click="RandomImage()">随机头像</p>
+					<input type="text" id="name" v-model="names[random_name]['name']" placeholder="请输入中文姓名">
+
+					<input type="text" id="info" v-model="names[random_name]['info']" placeholder="请输入英文姓名">
+					<div id="save" v-on:click="save()">保存</div>
+					<div id="cancel" v-on:click="DisMask()">取消</div>
+				</div>
+			</div>
+			<div id="header">
+				<h1 id="title">通信录</h1>
+				<img id="add" src="./img/add.png" alt="" v-on:click="disableAddModal('add')" />
+			</div>
+			<p id="tip" v-show='tip_show'>
+				当前没有任何联系人<br />
+				请点击右上角添加
+			</p>
+			<div id="content" v-for="">
+
+				<div id="template" v-bind:class="[item.card==true?'card':'card card_expand']" v-for="item,index in add_data">
+					<div class="avatar" :style="{backgroundImage:item.url2}">
+					</div>
+					<div class="group">
+						<p class="name">{{item.name}}</p>
+						<p class="info">{{item.info}}</p>
+					</div>
+					<img src="./img/more.png" alt="" class=" more" v-on:click="extend(index)">
+					<div class="expand">
+						<div class="edit" v-on:click="edit(index)"></div>
+						<div class="line"></div>
+						<div class="delete" v-on:click="remove(index)"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script type="text/javascript">
+			var vm = new Vue({
+				el: '#app',
+				data: {
+					tip_show: true, //提示是否隐藏
+					url: '', //头像url
+					edit_index: 0, //需要修改内容的索引
+					mask: document.querySelector("#mask"), // 获取mask
+					avatar: document.querySelector('#avatar'), //获取头像框
+					dis_mask: 'disableAddModal', //mask class名
+					names: [{
+							name: '佐藤',
+							info: 'さとう',
+
+						},
+						{
+							name: '铃木',
+							info: 'すずき'
+						},
+						{
+							name: '高桥',
+							info: 'たかはし'
+						},
+						{
+							name: '田中',
+							info: 'たなか'
+						},
+						{
+							name: '高桥',
+							info: 'たかはし'
+						},
+						{
+							name: '渡边',
+							info: 'わたなべ'
+						},
+						{
+							name: '伊藤',
+							info: 'いとう'
+						},
+						{
+							name: '小林',
+							info: 'こばやし'
+						},
+						{
+							name: '山本',
+							info: 'やまもと'
+						},
+					],
+					add_data: [], //新增的数据
+					random_name: 0, //名称和英文名的随机数
+					url_random: 0, //头像的随机数
+					// element_show: false, //是否显示
+					edit_or_add: '', //判断是点击添加还是修改
+				},
+
+				methods: {
+					//显示增加框
+					disableAddModal: function(parm) {
+						this.RandomImage() //随机头像
+						this.random_name = Math.floor(Math.random() * this.names.length) //名称随机数赋值
+						mask.className = '' //mask的class修改为空则增加框显示
+						this.edit_or_add = parm //修改函数传值 是否为点击修改进入
+
+					},
+					// 隐藏增加框
+					DisMask: function() {
+						mask.className = this.dis_mask
+					},
+					//保存
+					save: function() {
+						
+						this.tip_show = false //隐藏tip
+						this.DisMask() //隐藏增加框
+						
+						// 如果进入方式是点击增加
+						if (this.edit_or_add == 'add') {
+							//添加新数据
+							this.add_data.push({
+								name: this.names[this.random_name]['name'],
+								info: this.names[this.random_name]['info'],
+								url2: avatar.style.backgroundImage,
+								extend_show: false,
+								card: true,
+							})
+						} else {
+							//修改数据 this.edit_index 为要修改内容的索引由 edit()函数赋值
+							this.add_data.splice(this.edit_index, 1, {
+								name: this.names[this.random_name]['name'],
+								info: this.names[this.random_name]['info'],
+								url2: avatar.style.backgroundImage,
+								extend_show: false,
+								card: true,
+							})
+							console.log('已修改')
+
+						}
+
+
+
+
+					},
+					//随机头像
+					RandomImage: function() {
+						this.url_random = Math.floor(Math.random() * 47)
+						this.url = "url('./avatar/" + this.url_random + ".jpg')"
+						avatar.style.backgroundImage = this.url
+						// console.log(this.url_random)
+					},
+					//显示拓展
+					extend: function(index) {
+
+						if (this.add_data[index].card == true) {
+							this.add_data[index].card = false
+						} else {
+							this.add_data[index].card = true
+							// console.log(this.add_data[index].card)
+						}
+					},
+					//修改
+					edit: function(index) {
+						this.disableAddModal('edit') //打开增加框
+						// console.log(this.add_data[index].name)
+						this.names[this.random_name]['name'] = this.add_data[index].name //将现有名称显示到增加框
+						this.names[this.random_name]['info'] = this.add_data[index].info //将现有英文名称显示到增加框
+						avatar.style.backgroundImage = this.add_data[index].url2 ////将现有头像显示到增加框
+						this.edit_index = index //将点击的index索引值提取出
+
+
+					},
+					//删除
+					remove: function(index) {
+						this.add_data.splice(index, 1)
+					}
+				}
+
+			})
+		</script>
+	</body>
+</html>
